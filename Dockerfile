@@ -1,15 +1,15 @@
 # Anchor Engine - JOSS Demo Docker Image
-# Production-ready container with C++ FTS backend built from source
+# Production-ready container with WASM-based PGlite backend
 # Supports: amd64 (x86_64), arm64 (Apple Silicon, Graviton)
 
 FROM node:20-bookworm
 
-# Install pnpm, C++ build tools, and runtime dependencies
+# Install pnpm and runtime dependencies (no C++ build tools needed)
 RUN npm install -g pnpm && \
     apt-get update && \
     apt-get install -y \
     libstdc++6 curl \
-    cmake g++ make git && \
+    git && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -22,17 +22,7 @@ ENV NODE_ENV=production
 # Copy project files
 COPY . .
 
-# Build C++ native library (anchor_core) for this platform
-RUN cd cpp && \
-    cmake -B build -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=ON \
-    -DBUILD_TESTS=OFF \
-    -DBUILD_NAPI_BINDINGS=OFF && \
-    cmake --build build --config Release -j$(nproc) && \
-    mkdir -p /app/packages/anchor-core/lib/linux-x64 && \
-    cp build/libanchor_core.so /app/packages/anchor-core/lib/linux-x64/
-
-# Install dependencies and build TypeScript
+# Install dependencies and build TypeScript (WASM modules are pre-built)
 RUN pnpm install --no-frozen-lockfile && \
     pnpm run build
 
