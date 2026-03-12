@@ -381,7 +381,14 @@ function loadConfig(): Config {
       if (userSettings.server) {
         if (userSettings.server.host) loadedConfig.HOST = userSettings.server.host;
         if (userSettings.server.port) loadedConfig.PORT = userSettings.server.port;
-        if (userSettings.server.api_key !== undefined) loadedConfig.API_KEY = userSettings.server.api_key;
+        
+        // API_KEY: Environment variable takes priority over user_settings.json
+        // This allows Docker/Kubernetes to inject secrets without modifying files
+        if (!process.env['ANCHOR_API_KEY'] && userSettings.server.api_key !== undefined) {
+          loadedConfig.API_KEY = userSettings.server.api_key;
+        } else if (process.env['ANCHOR_API_KEY']) {
+          loadedConfig.API_KEY = process.env['ANCHOR_API_KEY'];
+        }
       }
 
       // Load Resource Management Settings
