@@ -50,6 +50,3 @@ tests/
 tmp/
 temp/
 *.tmp
-
-# C++ build artifacts (will be rebuilt in container)
-cpp/build/
